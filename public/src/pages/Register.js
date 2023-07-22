@@ -1,15 +1,74 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import { registRoute } from "../utils/APIRoutes";
 
 const Register = () => {
-  const handleSubmit = (event) => {
+  const [values, setValues] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const Navigate = useNavigate();
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    alert("form");
+    if (handleValidation()) {
+      const { username, email, password } = values;
+      const { data } = await axios.post(registRoute, {
+        username,
+        email,
+        password,
+      });
+      if (data.status === false) {
+        toast.error(data.msg, toastOptions);
+      }
+      if (data.status === true) {
+        localStorage.setItem("chat-app-user", JSON.stringify(data.user));
+        Navigate("/");
+      }
+    }
   };
 
-  const handleChange = (e) => {};
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: "8000",
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
+
+  const handleValidation = () => {
+    const { username, email, password, confirmPassword } = values;
+    if (password !== confirmPassword) {
+      toast.error(
+        "password and confirm password should be same.",
+        toastOptions
+      );
+      return false;
+    } else if (username.length < 3) {
+      toast.error("Username should be greater than 3 characters", toastOptions);
+      return false;
+    } else if (password.length < 8) {
+      toast.error(
+        "password should be equal or greater than 8 characters",
+        toastOptions
+      );
+      return false;
+    } else if (email === "") {
+      toast.error("email is required", toastOptions);
+      return false;
+    }
+    return true;
+  };
+
+  const handleChange = (e) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+  };
 
   return (
     <>
@@ -49,6 +108,7 @@ const Register = () => {
           </span>
         </form>
       </FormContainer>
+      <ToastContainer></ToastContainer>
     </>
   );
 };
@@ -115,7 +175,7 @@ const FormContainer = styled.div`
       text-transform: uppercase;
       a {
         color: #4e0eff;
-        text-transform: none;
+        text-decoration: none;
         font-weight: bold;
       }
     }
