@@ -13,20 +13,27 @@ const Login = () => {
     password: "",
   });
   const Navigate = useNavigate();
+  useEffect(() => {
+    if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+      Navigate("/");
+    }
+  }, []);
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
       const { username, password } = values;
       const { data } = await axios.post(loginRoute, {
         username,
-
         password,
       });
       if (data.status === false) {
         toast.error(data.msg, toastOptions);
       }
       if (data.status === true) {
-        localStorage.setItem("chat-app-user", JSON.stringify(data.user));
+        localStorage.setItem(
+          process.env.REACT_APP_LOCALHOST_KEY,
+          JSON.stringify(data.user)
+        );
         Navigate("/");
       }
     }
@@ -39,12 +46,6 @@ const Login = () => {
     draggable: true,
     theme: "dark",
   };
-
-  useEffect(() => {
-    if (localStorage.getItem("chat-app-user")) {
-      Navigate("/");
-    }
-  }, []);
 
   const handleValidation = () => {
     const { username, password } = values;
